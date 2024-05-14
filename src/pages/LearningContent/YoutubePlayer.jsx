@@ -37,8 +37,7 @@ const YoutubePlayer = ({ videoId, courseId, totalHours, setTotalHours }) => {
       interval = setInterval(() => {
         if (isPlaying) {
           const currentTime = player.getCurrentTime();
-          const elapsedSeconds = currentTime - startTime;
-          const elapsedHours = elapsedSeconds / 3600;
+          const elapsedHours = Math.floor(currentTime - startTime); // / 3600; //  60 seconds * 60 minutes = hour
           setTotalHours((prevTotalHours) => prevTotalHours + elapsedHours);
           setStartTime(currentTime);
         }
