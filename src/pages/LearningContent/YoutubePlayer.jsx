@@ -7,6 +7,7 @@ const YoutubePlayer = ({ videoId, courseId, totalHours, setTotalHours }) => {
   const [player, setPlayer] = useState(null);
   const [startTime, setStartTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const options = {
     height: "420",
@@ -28,35 +29,21 @@ const YoutubePlayer = ({ videoId, courseId, totalHours, setTotalHours }) => {
     } else if (state === 2 || state === 0) {
       // Video is paused or ended
       setIsPlaying(false);
+      setElapsedSeconds((prevElapsedSeconds) => {
+        // Calculate total elapsed seconds
+        return prevElapsedSeconds + Math.floor(player.getCurrentTime() - startTime);
+      });
     }
   };
 
   useEffect(() => {
-    let interval;
-    if (player) {
-      interval = setInterval(() => {
-        if (isPlaying) {
-          const currentTime = player.getCurrentTime();
-          const elapsedHours = Math.floor(currentTime - startTime); // / 3600; //  60 seconds * 60 minutes = hour
-          setTotalHours((prevTotalHours) => prevTotalHours + elapsedHours);
-          setStartTime(currentTime);
-        }
-      }, 1000);
-    }
     return () => {
-      // Cleanup function to clear interval when component unmounts or player changes
-      clearInterval(interval);
-    };
-  }, [player, isPlaying, startTime, setTotalHours]);
-
-  useEffect(() => {
-    // Update progress when component unmounts or totalHours changes
-    return () => {
+    
       learningApi.updateProgress({
         payload: {
           courseId: courseId,
           videoId: videoId,
-          progress: totalHours,
+          progress: totalHours + elapsedSeconds,
         },
         success: (res) => {
           console.log("updated progress success", res);
@@ -66,7 +53,7 @@ const YoutubePlayer = ({ videoId, courseId, totalHours, setTotalHours }) => {
         },
       });
     };
-  }, [totalHours, courseId, videoId]);
+  }, [totalHours, courseId, videoId, elapsedSeconds]); // Include elapsedSeconds as a dependency to capture the latest value
 
   return (
     <div className="learningVideo_container">
