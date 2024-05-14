@@ -21,12 +21,6 @@ const YoutubePlayer = ({ videoId, courseId, totalHours, setTotalHours }) => {
 
   const handleStateChange = (event) => {
     const state = event.data;
-    // -1 (unstarted)
-    // 0 (ended)
-    // 1 (playing)
-    // 2 (paused)
-    // 3 (buffering)
-    // 5 (video cued).
     if (state === 1) {
       // Video is playing
       setIsPlaying(true);
@@ -38,6 +32,26 @@ const YoutubePlayer = ({ videoId, courseId, totalHours, setTotalHours }) => {
   };
 
   useEffect(() => {
+    let interval;
+    if (player) {
+      interval = setInterval(() => {
+        if (isPlaying) {
+          const currentTime = player.getCurrentTime();
+          const elapsedSeconds = currentTime - startTime;
+          const elapsedHours = elapsedSeconds / 3600;
+          setTotalHours((prevTotalHours) => prevTotalHours + elapsedHours);
+          setStartTime(currentTime);
+        }
+      }, 1000);
+    }
+    return () => {
+      // Cleanup function to clear interval when component unmounts or player changes
+      clearInterval(interval);
+    };
+  }, [player, isPlaying, startTime, setTotalHours]);
+
+  useEffect(() => {
+    // Update progress when component unmounts or totalHours changes
     return () => {
       learningApi.updateProgress({
         payload: {
@@ -53,23 +67,8 @@ const YoutubePlayer = ({ videoId, courseId, totalHours, setTotalHours }) => {
         },
       });
     };
-  }, []);
+  }, [totalHours, courseId, videoId]);
 
-  useEffect(() => {
-    if (player) {
-      const interval = setInterval(() => {
-        if (isPlaying) {
-          const currentTime = player.getCurrentTime();
-          const elapsedHours = Math.floor(currentTime - startTime); // / 3600; //  60 seconds * 60 minutes = hour
-          setTotalHours((prevTotalHours) => prevTotalHours + elapsedHours);
-          setStartTime(currentTime);
-        }
-      }, 1000);
-      return () => {
-        clearInterval(interval);
-      };
-    }
-  }, [player, isPlaying, startTime]);
   return (
     <div className="learningVideo_container">
       <YouTube
