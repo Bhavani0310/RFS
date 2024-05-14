@@ -62,6 +62,7 @@ const LearningContent = () => {
 
   const hanldeWriteNote = () => {
     if (!updateNotes.isEdit) {
+      
       learningApi.addNotes({
         payload: {
           courseId: data?.youtubeCourseId,

@@ -33,9 +33,12 @@ const YoutubePlayer = ({ videoId, courseId, totalHours, setTotalHours }) => {
         // Calculate total elapsed seconds
         return prevElapsedSeconds + Math.floor(player.getCurrentTime() - startTime);
       });
+      setTotalHours(totalHours+elapsedSeconds)
     }
   };
-
+useEffect(()=>{
+  setTotalHours(elapsedSeconds)
+},[elapsedSeconds])
   useEffect(() => {
     return () => {
     
